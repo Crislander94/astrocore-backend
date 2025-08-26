@@ -87,6 +87,17 @@ const authController = new AuthController();
  *           type: string
  *         expiresIn:
  *           type: number
+ *     ApiResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *         message:
+ *           type: string
+ *         data:
+ *           type: object
+ *         error:
+ *           type: string
  *   securitySchemes:
  *     bearerAuth:
  *       type: http
@@ -94,14 +105,202 @@ const authController = new AuthController();
  *       bearerFormat: JWT
  */
 
-// Rutas públicas (no requieren autenticación)
-router.post('/login', authController.login);
+/**
+ * @swagger
+ * tags:
+ *   name: Authentication
+ *   description: Endpoints de autenticación passwordless
+ */
+
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Registrar nuevo usuario
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RegisterRequest'
+ *     responses:
+ *       201:
+ *         description: Usuario registrado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         email:
+ *                           type: string
+ *                         message:
+ *                           type: string
+ *       409:
+ *         description: El email ya está registrado
+ *       400:
+ *         description: Error de validación
+ */
 router.post('/register', authController.register);
+
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Iniciar sesión (envía código por email)
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: Código de verificación enviado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         email:
+ *                           type: string
+ *                         message:
+ *                           type: string
+ *       404:
+ *         description: Usuario no encontrado
+ *       400:
+ *         description: Error de validación
+ */
+router.post('/login', authController.login);
+
+/**
+ * @swagger
+ * /api/auth/verify-login:
+ *   post:
+ *     summary: Verificar código de inicio de sesión
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VerifyCodeRequest'
+ *     responses:
+ *       200:
+ *         description: Código verificado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/AuthResponse'
+ *       400:
+ *         description: Código inválido o expirado
+ */
 router.post('/verify-login', authController.verifyLogin);
+
+/**
+ * @swagger
+ * /api/auth/verify-register:
+ *   post:
+ *     summary: Verificar código de registro
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VerifyCodeRequest'
+ *     responses:
+ *       200:
+ *         description: Registro completado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/AuthResponse'
+ *       400:
+ *         description: Código inválido o expirado
+ */
 router.post('/verify-register', authController.verifyRegister);
+
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *   post:
+ *     summary: Renovar token de acceso
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Token renovado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         accessToken:
+ *                           type: string
+ *                         refreshToken:
+ *                           type: string
+ *                         expiresIn:
+ *                           type: number
+ *       401:
+ *         description: Refresh token inválido o expirado
+ */
 router.post('/refresh', authController.refresh);
 
-// Rutas protegidas (requieren autenticación)
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Cerrar sesión
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Sesión cerrada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ *       401:
+ *         description: No autorizado
+ */
 router.post('/logout', authenticate, authController.logout);
 
 export { router as authRoutes };

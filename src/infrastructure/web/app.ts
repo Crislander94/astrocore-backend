@@ -5,9 +5,9 @@ import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
-import swaggerJsdoc from 'swagger-jsdoc';
 
 import { config } from '@/infrastructure/config/environment.js';
+import { swaggerSpec } from '@/infrastructure/config/swagger.js';
 import { errorHandler } from '@/infrastructure/web/middlewares/errorHandler.js';
 import { notFoundHandler } from '@/infrastructure/web/middlewares/notFoundHandler.js';
 import { authRoutes } from '@/infrastructure/web/routes/authRoutes.js';
@@ -72,38 +72,15 @@ export function createApp(): express.Application {
 
   // Swagger documentation
   const swaggerOptions = {
-    definition: {
-      openapi: '3.0.0',
-      info: {
-        title: 'AstroCore Ecommerce API',
-        version: '1.0.0',
-        description: 'API para el ecommerce AstroCore con arquitectura hexagonal',
-        contact: {
-          name: 'AstroCore Team',
-          email: 'dev@astrocore.com',
-        },
-      },
-      servers: [
-        {
-          url: `http://localhost:${config.port}`,
-          description: 'Development server',
-        },
-      ],
-      components: {
-        securitySchemes: {
-          bearerAuth: {
-            type: 'http',
-            scheme: 'bearer',
-            bearerFormat: 'JWT',
-          },
-        },
-      },
-    },
-    apis: ['./src/infrastructure/web/routes/*.ts'],
+    customCss: `
+      .swagger-ui .topbar { display: none }
+      .swagger-ui .info .title { color: #2563eb }
+    `,
+    customSiteTitle: 'AstroCore API Documentation',
+    customfavIcon: '/favicon.ico',
   };
 
-  const swaggerSpec = swaggerJsdoc(swaggerOptions);
-  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
 
   // Health check endpoint
   app.use('/health', healthRoutes);

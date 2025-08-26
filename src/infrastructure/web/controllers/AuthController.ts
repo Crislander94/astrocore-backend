@@ -41,50 +41,7 @@ export class AuthController {
     );
   }
 
-  /**
-   * @swagger
-   * /api/auth/login:
-   *   post:
-   *     summary: Iniciar sesión (envía código por email)
-   *     tags: [Authentication]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - email
-   *             properties:
-   *               email:
-   *                 type: string
-   *                 format: email
-   *                 example: usuario@ejemplo.com
-   *     responses:
-   *       200:
-   *         description: Código de verificación enviado
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                   example: true
-   *                 message:
-   *                   type: string
-   *                   example: Código de verificación enviado a tu email
-   *                 data:
-   *                   type: object
-   *                   properties:
-   *                     email:
-   *                       type: string
-   *                       example: usuario@ejemplo.com
-   *       404:
-   *         description: Usuario no encontrado
-   *       400:
-   *         description: Error de validación
-   */
+  // Iniciar sesión (envía código por email)
   login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const loginData = requestLoginSchema.parse(req.body);
@@ -97,41 +54,7 @@ export class AuthController {
     }
   };
 
-  /**
-   * @swagger
-   * /api/auth/register:
-   *   post:
-   *     summary: Registrar nuevo usuario
-   *     tags: [Authentication]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - email
-   *               - firstName
-   *               - lastName
-   *             properties:
-   *               email:
-   *                 type: string
-   *                 format: email
-   *                 example: usuario@ejemplo.com
-   *               firstName:
-   *                 type: string
-   *                 example: Juan
-   *               lastName:
-   *                 type: string
-   *                 example: Pérez
-   *     responses:
-   *       201:
-   *         description: Usuario registrado exitosamente
-   *       409:
-   *         description: El email ya está registrado
-   *       400:
-   *         description: Error de validación
-   */
+  // Registrar nuevo usuario
   register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const registerData = requestRegisterSchema.parse(req.body);
@@ -144,56 +67,7 @@ export class AuthController {
     }
   };
 
-  /**
-   * @swagger
-   * /api/auth/verify-login:
-   *   post:
-   *     summary: Verificar código de inicio de sesión
-   *     tags: [Authentication]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - email
-   *               - code
-   *             properties:
-   *               email:
-   *                 type: string
-   *                 format: email
-   *               code:
-   *                 type: string
-   *                 minLength: 6
-   *                 maxLength: 6
-   *                 example: "123456"
-   *     responses:
-   *       200:
-   *         description: Código verificado exitosamente
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                 message:
-   *                   type: string
-   *                 data:
-   *                   type: object
-   *                   properties:
-   *                     user:
-   *                       $ref: '#/components/schemas/User'
-   *                     accessToken:
-   *                       type: string
-   *                     refreshToken:
-   *                       type: string
-   *                     expiresIn:
-   *                       type: number
-   *       400:
-   *         description: Código inválido o expirado
-   */
+  // Verificar código de inicio de sesión
   verifyLogin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const verifyData = verifyCodeSchema.parse(req.body);
@@ -206,36 +80,7 @@ export class AuthController {
     }
   };
 
-  /**
-   * @swagger
-   * /api/auth/verify-register:
-   *   post:
-   *     summary: Verificar código de registro
-   *     tags: [Authentication]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - email
-   *               - code
-   *             properties:
-   *               email:
-   *                 type: string
-   *                 format: email
-   *               code:
-   *                 type: string
-   *                 minLength: 6
-   *                 maxLength: 6
-   *                 example: "123456"
-   *     responses:
-   *       200:
-   *         description: Registro completado exitosamente
-   *       400:
-   *         description: Código inválido o expirado
-   */
+  // Verificar código de registro
   verifyRegister = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const verifyData = verifyCodeSchema.parse(req.body);
@@ -248,29 +93,7 @@ export class AuthController {
     }
   };
 
-  /**
-   * @swagger
-   * /api/auth/refresh:
-   *   post:
-   *     summary: Renovar token de acceso
-   *     tags: [Authentication]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - refreshToken
-   *             properties:
-   *               refreshToken:
-   *                 type: string
-   *     responses:
-   *       200:
-   *         description: Token renovado exitosamente
-   *       401:
-   *         description: Refresh token inválido o expirado
-   */
+  // Renovar token de acceso
   refresh = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { refreshToken } = req.body;
@@ -291,18 +114,7 @@ export class AuthController {
     }
   };
 
-  /**
-   * @swagger
-   * /api/auth/logout:
-   *   post:
-   *     summary: Cerrar sesión
-   *     tags: [Authentication]
-   *     security:
-   *       - bearerAuth: []
-   *     responses:
-   *       200:
-   *         description: Sesión cerrada exitosamente
-   */
+  // Cerrar sesión
   logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       // En un sistema stateless con JWT, el logout es principalmente del lado del cliente
