@@ -60,7 +60,6 @@ export class EmailServiceImpl implements EmailService {
 
     const subject = this.getSubjectByType(type);
     const html = this.getVerificationEmailTemplate(userName, code, type);
-    console.log('Prepared email content:', { subject, html });
     try {
       console.log('Sending email to:', email);
       console.log('Email subject:', subject);
