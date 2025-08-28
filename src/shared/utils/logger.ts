@@ -23,10 +23,55 @@ class Logger {
   private formatMessage(level: LogLevel, message: string, ...args: any[]): string {
     const timestamp = new Date().toISOString();
     const formattedArgs = args.length > 0 ? ' ' + args.map(arg => 
-      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+      this.safeStringify(arg)
     ).join(' ') : '';
     
     return `[${timestamp}] [${level.toUpperCase()}] ${message}${formattedArgs}`;
+  }
+
+  private safeStringify(obj: any): string {
+    if (obj === null || obj === undefined) {
+      return String(obj);
+    }
+
+    if (typeof obj !== 'object') {
+      return String(obj);
+    }
+
+    // Manejar errores de manera especial
+    if (obj instanceof Error) {
+      return `Error: ${obj.message}\nStack: ${obj.stack}`;
+    }
+
+    // Crear un replacer para manejar referencias circulares
+    const seen = new WeakSet();
+    
+    try {
+      return JSON.stringify(obj, (key, value) => {
+        // Filtrar propiedades problemáticas comunes
+        if (key === 'issuerCertificate' || 
+            key === 'certificate' || 
+            key === 'socket' || 
+            key === 'connection' ||
+            key === '_events' ||
+            key === '_eventsCount' ||
+            key === 'domain') {
+          return '[Filtered]';
+        }
+
+        if (typeof value === 'object' && value !== null) {
+          if (seen.has(value)) {
+            return '[Circular Reference]';
+          }
+          seen.add(value);
+        }
+        
+        return value;
+      }, 2);
+    } catch (error) {
+      // Si aún falla, devolver una representación básica
+      return `[Object: ${obj.constructor?.name || 'Unknown'}]`;
+    }
   }
 
   private log(level: LogLevel, message: string, ...args: any[]): void {

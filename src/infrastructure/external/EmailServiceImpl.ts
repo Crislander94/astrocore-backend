@@ -6,26 +6,44 @@ import { logger } from '@/shared/utils/logger.js';
 
 export class EmailServiceImpl implements EmailService {
   private transporter: nodemailer.Transporter | null = null;
+  private initializationError: string | null = null;
 
   constructor() {
     this.initializeTransporter();
   }
 
-  private initializeTransporter(): void {
+  private async initializeTransporter(): Promise<void> {
     if (!this.isConfigured()) {
+      this.initializationError = 'Email service not configured';
       logger.warn('Email service not configured. Email functionality will be disabled.');
+      // Ejecutar diagnóstico para ayudar con la configuración
       return;
     }
 
-    this.transporter = nodemailer.createTransport({
-      host: config.email.host,
-      port: config.email.port,
-      secure: config.email.secure,
-      auth: {
-        user: config.email.user,
-        pass: config.email.pass,
-      },
-    });
+    try {
+      logger.info('Initializing SMTP email service...');
+      logger.debug(`SMTP Config - Host: ${config.email.host}, Port: ${config.email.port}, Secure: ${config.email.secure}`);
+      
+      this.transporter = nodemailer.createTransport({
+        host: config.email.host,
+        port: config.email.port,
+        secure: false, // true for 465, false for other ports
+        auth: {
+          user: config.email.user,
+          pass: config.email.pass ? config.email.pass : undefined, // No loggear la contraseña
+        },
+      });
+
+      // Verificar conexión
+      await this.transporter.verify();
+      logger.info('✅ SMTP email service initialized and verified successfully');
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.initializationError = errorMessage;
+      
+      logger.error(`❌ Failed to initialize SMTP email service: ${errorMessage}`);
+    }
   }
 
   async sendVerificationCode(
@@ -35,14 +53,18 @@ export class EmailServiceImpl implements EmailService {
     type: VerificationCodeType
   ): Promise<void> {
     if (!this.transporter) {
-      logger.warn(`Email not sent to ${email} - service not configured`);
-      return;
+      const reason = this.initializationError || 'service not configured';
+      logger.warn(`Email not sent to ${email} - ${reason}`);
+      throw new Error(`Email service unavailable: ${reason}`);
     }
 
     const subject = this.getSubjectByType(type);
     const html = this.getVerificationEmailTemplate(userName, code, type);
-
+    console.log('Prepared email content:', { subject, html });
     try {
+      console.log('Sending email to:', email);
+      console.log('Email subject:', subject);
+      console.log('Email HTML:', config.email.fromName + ' <' + config.email.fromEmail + '>');
       await this.transporter.sendMail({
         from: `${config.email.fromName} <${config.email.fromEmail}>`,
         to: email,
@@ -52,8 +74,11 @@ export class EmailServiceImpl implements EmailService {
 
       logger.info(`Verification email sent to ${email} for ${type}`);
     } catch (error) {
-      logger.error(`Failed to send verification email to ${email}:`, error);
-      throw new Error('Failed to send verification email');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorCode = (error as any)?.code || 'UNKNOWN';
+      
+      logger.error(`Failed to send verification email to ${email}. Error: ${errorMessage} (Code: ${errorCode})`);
+      throw new Error(`Failed to send verification email: ${errorMessage}`);
     }
   }
 
@@ -75,7 +100,8 @@ export class EmailServiceImpl implements EmailService {
 
       logger.info(`Welcome email sent to ${email}`);
     } catch (error) {
-      logger.error(`Failed to send welcome email to ${email}:`, error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error(`Failed to send welcome email to ${email}. Error: ${errorMessage}`);
     }
   }
 
@@ -102,7 +128,8 @@ export class EmailServiceImpl implements EmailService {
 
       logger.info(`Order confirmation sent to ${email} for order ${orderNumber}`);
     } catch (error) {
-      logger.error(`Failed to send order confirmation to ${email}:`, error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error(`Failed to send order confirmation to ${email}. Error: ${errorMessage}`);
     }
   }
 
@@ -128,7 +155,8 @@ export class EmailServiceImpl implements EmailService {
 
       logger.info(`Payment confirmation sent to ${email}`);
     } catch (error) {
-      logger.error(`Failed to send payment confirmation to ${email}:`, error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error(`Failed to send payment confirmation to ${email}. Error: ${errorMessage}`);
     }
   }
 

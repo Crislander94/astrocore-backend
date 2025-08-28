@@ -13,9 +13,9 @@ async function bootstrap() {
     const app = createApp();
 
     // Start server
-    const server = app.listen(config.port, () => {
-      logger.info(`🚀 Server running on port ${config.port}`);
-      logger.info(`📚 API Documentation: http://localhost:${config.port}/api/docs`);
+    const server = app.listen(process.env.PORT || 3000, () => {
+      logger.info(`🚀 Server running on port ${process.env.PORT || 3000}`);
+      logger.info(`📚 API Documentation: http://localhost:${process.env.PORT || 3000}/api/docs`);
       logger.info(`🌍 Environment: ${config.nodeEnv}`);
     });
 
