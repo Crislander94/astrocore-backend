@@ -31,6 +31,7 @@ export class CreateProductUseCase {
   async execute(request: CreateProductRequest): Promise<Product> {
     const productData = {
       ...request,
+      descripcion: request.descripcion ?? '',
       haveDiscount: request.haveDiscount ?? false,
       trackQuantity: request.trackQuantity ?? true,
       quantity: request.quantity ?? 0,
