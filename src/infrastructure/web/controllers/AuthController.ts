@@ -94,7 +94,7 @@ export class AuthController {
   };
 
   // Renovar token de acceso
-  refresh = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  refresh = async (req: Request, res: Response, next: NextFunction): Promise<void | Response> => {
     try {
       const { refreshToken } = req.body;
       
