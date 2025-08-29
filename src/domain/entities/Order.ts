@@ -3,7 +3,7 @@ export interface Order {
   orderNumber: string;
   userId: string;
   status: OrderStatus;
-  paymentStatus: PaymentStatus;
+  paymentStatus: PaymentStatusOrder;
   paymentMethod?: string;
   subtotal: number;
   tax: number;
@@ -57,7 +57,7 @@ export enum OrderStatus {
   REFUNDED = 'REFUNDED'
 }
 
-export enum PaymentStatus {
+export enum PaymentStatusOrder {
   PENDING = 'PENDING',
   PROCESSING = 'PROCESSING',
   COMPLETED = 'COMPLETED',
