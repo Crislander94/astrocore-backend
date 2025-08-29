@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaProductRepository } from '../database/repositories/PrismaProductRepository';
 import { PrismaCartRepository } from '../database/repositories/PrismaCartRepository';
 import { PrismaOrderRepository } from '../database/repositories/PrismaOrderRepository';
+import { PrismaAddressRepository } from '../database/repositories/PrismaAddressRepository';
 import { CreateProductUseCase } from '../../application/use-cases/products/CreateProductUseCase';
 import { GetProductsUseCase } from '../../application/use-cases/products/GetProductsUseCase';
 import { GetProductByIdUseCase } from '../../application/use-cases/products/GetProductByIdUseCase';
@@ -16,9 +17,14 @@ import { CreateOrderUseCase } from '../../application/use-cases/orders/CreateOrd
 import { GetOrdersUseCase } from '../../application/use-cases/orders/GetOrdersUseCase';
 import { GetOrderByIdUseCase } from '../../application/use-cases/orders/GetOrderByIdUseCase';
 import { UpdateOrderStatusUseCase } from '../../application/use-cases/orders/UpdateOrderStatusUseCase';
+import { CreateAddressUseCase } from '../../application/use-cases/addresses/CreateAddressUseCase';
+import { GetAddressesUseCase } from '../../application/use-cases/addresses/GetAddressesUseCase';
+import { UpdateAddressUseCase } from '../../application/use-cases/addresses/UpdateAddressUseCase';
+import { DeleteAddressUseCase } from '../../application/use-cases/addresses/DeleteAddressUseCase';
 import { ProductController } from '../web/controllers/ProductController';
 import { CartController } from '../web/controllers/CartController';
 import { OrderController } from '../web/controllers/OrderController';
+import { AddressController } from '../web/controllers/AddressController';
 
 // Prisma client singleton
 const prisma = new PrismaClient();
@@ -27,6 +33,7 @@ const prisma = new PrismaClient();
 const productRepository = new PrismaProductRepository(prisma);
 const cartRepository = new PrismaCartRepository(prisma);
 const orderRepository = new PrismaOrderRepository(prisma);
+const addressRepository = new PrismaAddressRepository(prisma);
 
 // Product Use Cases
 const createProductUseCase = new CreateProductUseCase(productRepository);
@@ -47,6 +54,12 @@ const createOrderUseCase = new CreateOrderUseCase(orderRepository, cartRepositor
 const getOrdersUseCase = new GetOrdersUseCase(orderRepository);
 const getOrderByIdUseCase = new GetOrderByIdUseCase(orderRepository);
 const updateOrderStatusUseCase = new UpdateOrderStatusUseCase(orderRepository);
+
+// Address Use Cases
+const createAddressUseCase = new CreateAddressUseCase(addressRepository);
+const getAddressesUseCase = new GetAddressesUseCase(addressRepository);
+const updateAddressUseCase = new UpdateAddressUseCase(addressRepository);
+const deleteAddressUseCase = new DeleteAddressUseCase(addressRepository);
 
 // Controllers
 export const productController = new ProductController(
@@ -70,4 +83,11 @@ export const orderController = new OrderController(
   getOrdersUseCase,
   getOrderByIdUseCase,
   updateOrderStatusUseCase
+);
+
+export const addressController = new AddressController(
+  createAddressUseCase,
+  getAddressesUseCase,
+  updateAddressUseCase,
+  deleteAddressUseCase
 );

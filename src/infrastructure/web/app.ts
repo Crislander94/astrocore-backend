@@ -15,7 +15,7 @@ import { userRoutes } from '@/infrastructure/web/routes/userRoutes.js';
 import { productRoutes } from '@/infrastructure/web/routes/productRoutes.js';
 import { cartRoutes } from '@/infrastructure/web/routes/cartRoutes.js';
 import { orderRoutes } from '@/infrastructure/web/routes/orderRoutes.js';
-import { paymentRoutes } from '@/infrastructure/web/routes/paymentRoutes.js';
+import { addressRoutes } from '@/infrastructure/web/routes/addressRoutes.js';import { paymentRoutes } from '@/infrastructure/web/routes/paymentRoutes.js';
 import { healthRoutes } from '@/infrastructure/web/routes/healthRoutes.js';
 import { logger } from '@/shared/utils/logger.js';
 
@@ -88,7 +88,7 @@ export function createApp(): express.Application {
   // API routes
   app.use('/api/auth', authRoutes);
   app.use('/api/users', userRoutes);
-  app.use('/api/products', productRoutes);
+  app.use('/api/users/addresses', addressRoutes);  app.use('/api/products', productRoutes);
   app.use('/api/cart', cartRoutes);
   app.use('/api/orders', orderRoutes);
   app.use('/api/payments', paymentRoutes);
