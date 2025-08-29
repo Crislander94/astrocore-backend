@@ -1,0 +1,106 @@
+@startuml Sistema de Órdenes - Ecommerce AstroCore
+
+actor Usuario as U
+participant Frontend as F
+participant "API Gateway" as API
+participant "Auth Middleware" as Auth
+participant OrderController as OC
+participant "Use Cases" as UC
+participant OrderRepository as OR
+participant CartRepository as CR
+participant ProductRepository as PR
+participant Database as DB
+
+== Crear Orden desde Carrito ==
+U -> F: Clic "Proceder al checkout"
+F -> API: POST /api/orders\n{shippingAddressId, notes}
+API -> Auth: Verificar JWT token
+Auth --> API: userId extraído
+API -> OC: createOrder(req, res)
+OC -> UC: CreateOrderUseCase.execute()
+UC -> CR: CartRepository.getCartItems(userId)
+CR -> DB: SELECT cart_items JOIN products
+DB --> CR: Items del carrito
+CR --> UC: CartItems con productos
+UC -> UC: Validar carrito no vacío
+UC -> UC: Calcular subtotal, IVA, envío, total
+UC -> UC: Generar orderNumber único
+UC -> OR: OrderRepository.create()
+OR -> DB: BEGIN TRANSACTION
+OR -> DB: INSERT INTO orders
+OR -> DB: INSERT INTO order_items (múltiples)
+OR -> DB: COMMIT TRANSACTION
+DB --> OR: Orden creada
+OR --> UC: Order completa
+UC -> CR: CartRepository.clearCart(userId)
+CR -> DB: DELETE FROM cart_items
+UC --> OC: Order
+OC --> API: 201 {order}
+API --> F: Orden creada
+F --> U: "Orden #12345 creada exitosamente"
+
+== Listar Órdenes del Usuario ==
+U -> F: Ver "Mis pedidos"
+F -> API: GET /api/orders?page=1&limit=10
+API -> Auth: Verificar token
+Auth --> API: userId
+API -> OC: getOrders(req, res)
+OC -> UC: GetOrdersUseCase.execute()
+UC -> OR: OrderRepository.findByUserId()
+OR -> DB: SELECT orders JOIN order_items JOIN products
+DB --> OR: Órdenes con items
+OR --> UC: Orders[]
+UC --> OC: Orders paginadas
+OC --> API: 200 {orders, pagination}
+API --> F: Lista de órdenes
+F --> U: Mostrar historial de pedidos
+
+== Obtener Orden Específica ==
+U -> F: Clic en orden específica
+F -> API: GET /api/orders/order_123
+API -> Auth: Verificar token
+API -> OC: getOrderById(req, res)
+OC -> UC: GetOrderByIdUseCase.execute()
+UC -> OR: OrderRepository.findById()
+OR -> DB: SELECT order JOIN items JOIN products JOIN address
+DB --> OR: Orden completa con detalles
+OR --> UC: Order detallada
+UC -> UC: Verificar ownership (userId)
+UC --> OC: Order
+OC --> API: 200 {order}
+API --> F: Detalles de la orden
+F --> U: Ver estado, items, dirección, totales
+
+== Actualizar Estado de Orden (Admin) ==
+participant Admin as A
+A -> F: Cambiar estado de orden
+F -> API: PUT /api/orders/order_123/status\n{status: "SHIPPED"}
+API -> Auth: Verificar token + rol admin
+Auth --> API: userId + isAdmin
+API -> OC: updateOrderStatus(req, res)
+OC -> UC: UpdateOrderStatusUseCase.execute()
+UC -> OR: OrderRepository.findById()
+OR --> UC: Verificar orden existe
+UC -> OR: OrderRepository.updateStatus()
+OR -> DB: UPDATE orders SET status, updatedAt
+DB --> OR: Orden actualizada
+OR --> UC: Order
+UC --> OC: Order
+OC --> API: 200 {order}
+API --> F: Estado actualizado
+F --> A: "Estado cambiado a SHIPPED"
+
+== Validaciones y Reglas de Negocio ==
+note over UC
+- Carrito no puede estar vacío
+- Productos deben estar activos
+- Verificar stock disponible
+- Calcular IVA (15% Ecuador)
+- Generar orderNumber único
+- Estados válidos: PENDING → CONFIRMED →
+  PROCESSING → SHIPPED → DELIVERED
+- Solo admin puede cambiar estados
+- Usuario solo ve sus propias órdenes
+end note
+
+@endum

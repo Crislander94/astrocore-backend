@@ -1,0 +1,78 @@
+@startuml Flujo del Carrito - Ecommerce AstroCore
+
+actor Usuario as U
+participant Frontend as F
+participant "API Gateway" as API
+participant "Auth Middleware" as Auth
+participant CartController as CC
+participant "Use Cases" as UC
+participant CartRepository as CR
+participant Database as DB
+
+== Agregar al Carrito ==
+U -> F: Clic "Agregar al carrito"
+F -> API: POST /api/cart\n{productId, quantity, iva}
+API -> Auth: Verificar JWT token
+Auth --> API: userId extraído
+API -> CC: addToCart(req, res)
+CC -> UC: AddToCartUseCase.execute()
+UC -> CR: ProductRepository.findById()
+CR --> UC: Verificar producto + stock
+UC -> CR: CartRepository.addItem()
+CR -> DB: INSERT/UPDATE cart_items
+DB --> CR: CartItem creado
+CR --> UC: CartItem
+UC --> CC: CartItem
+CC --> API: 201 {cartItem}
+API --> F: Respuesta JSON
+F --> U: "Producto agregado"
+
+== Obtener Carrito ==
+U -> F: Ver carrito
+F -> API: GET /api/cart
+API -> Auth: Verificar token
+Auth --> API: userId
+API -> CC: getCart(req, res)
+CC -> UC: GetCartUseCase.execute()
+UC -> CR: CartRepository.getCartItems()
+CR -> DB: SELECT cart_items JOIN products
+DB --> CR: Items + datos producto
+CR --> UC: CartItemWithProduct[]
+UC -> UC: Calcular subtotal, IVA, total
+UC --> CC: CartSummary
+CC --> API: 200 {cart summary}
+API --> F: Datos del carrito
+F --> U: Mostrar carrito con totales
+
+== Actualizar Cantidad ==
+U -> F: Cambiar cantidad
+F -> API: PUT /api/cart/1\n{quantity: 3}
+API -> Auth: Verificar token
+API -> CC: updateCartItem()
+CC -> UC: UpdateCartItemUseCase.execute()
+UC -> CR: Verificar stock disponible
+UC -> CR: CartRepository.updateQuantity()
+CR -> DB: UPDATE cart_items
+DB --> CR: CartItem actualizado
+CR --> UC: CartItem
+UC --> CC: CartItem
+CC --> API: 200 {cartItem}
+API --> F: Confirmación
+F --> U: Cantidad actualizada
+
+== Remover Item ==
+U -> F: Eliminar producto
+F -> API: DELETE /api/cart/1
+API -> Auth: Verificar token
+API -> CC: removeFromCart()
+CC -> UC: RemoveFromCartUseCase.execute()
+UC -> CR: CartRepository.removeItem()
+CR -> DB: DELETE FROM cart_items
+DB --> CR: Confirmación
+CR --> UC: void
+UC --> CC: void
+CC --> API: 204 No Content
+API --> F: Confirmación
+F --> U: "Producto eliminado"
+
+@enduml
