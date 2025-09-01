@@ -22,6 +22,12 @@ export class PrismaCartRepository implements CartRepository {
     });
   }
 
+  async findByUserAndProduct(userId: string, productId: number): Promise<CartItem | null> {
+    return await this.prisma.cartItem.findUnique({
+      where: { userId_productId: { userId, productId } }
+    });
+  }
+
   async updateQuantity(userId: string, productId: number, quantity: number): Promise<CartItem> {
     return await this.prisma.cartItem.update({
       where: { userId_productId: { userId, productId } },

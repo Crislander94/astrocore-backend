@@ -1,4 +1,4 @@
-import { Product } from '../entities/Product';
+import { ProductBackend as Product } from '../entities/Product';
 
 export interface ProductFilters {
   category?: string;

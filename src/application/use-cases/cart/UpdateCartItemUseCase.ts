@@ -1,6 +1,6 @@
 import { CartRepository } from '../../../domain/repositories/CartRepository';
 import { ProductRepository } from '../../../domain/repositories/ProductRepository';
-import { CartItem } from '../../../domain/entities/CartItem';
+import { CartItem, CartItemEntity } from '../../../domain/entities/CartItem';
 
 export class UpdateCartItemUseCase {
   constructor(
@@ -9,13 +9,35 @@ export class UpdateCartItemUseCase {
   ) {}
 
   async execute(userId: string, productId: number, quantity: number): Promise<CartItem> {
-    if (quantity <= 0) {
-      throw new Error('Quantity must be greater than 0');
+    // Validar cantidad usando Entity Class
+    if (!CartItemEntity.validateQuantity(quantity)) {
+      throw new Error('Cantidad debe estar entre 1 y 99');
     }
 
-    //TODO: Verificar stock disponible
-    // const product = await this.productRepository.findById(productId);
+    // Verificar que el item existe en el carrito
+    const existingItem = await this.cartRepository.findByUserAndProduct(userId, productId);
+    if (!existingItem) {
+      throw new Error('Item not found in cart');
+    }
 
-    return await this.cartRepository.updateQuantity(userId, productId, quantity);
+    // Verificar stock disponible
+    const product = await this.productRepository.findById(productId);
+    if (product?.trackQuantity && product.quantity < quantity) {
+      throw new Error('Insufficient stock');
+    }
+
+    // Usar Entity Class para actualizar
+    const cartItemEntity = new CartItemEntity(
+      existingItem.id,
+      existingItem.userId,
+      existingItem.productId,
+      existingItem.quantity,
+      existingItem.iva,
+      existingItem.createdAt,
+      existingItem.updatedAt
+    );
+
+    const updatedEntity = cartItemEntity.updateQuantity(quantity);
+    return await this.cartRepository.updateQuantity(userId, productId, updatedEntity.quantity);
   }
 }
