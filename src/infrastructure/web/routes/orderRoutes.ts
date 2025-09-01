@@ -4,10 +4,10 @@ import { authenticate, requireAdmin } from '../middlewares/authMiddleware';
 import { validateRequest } from '../middlewares/validateRequest';
 import {
   createOrderSchema,
-  updateOrderStatusSchema,
   getOrdersQuerySchema,
   orderIdSchema
 } from '../validators/orderValidators';
+import { OrderStatusSchema } from '@/domain/entities';
 
 const router = Router();
 
@@ -171,7 +171,7 @@ router.put(
   requireAdmin,
   validateRequest({ 
     params: orderIdSchema,
-    body: updateOrderStatusSchema 
+    body: OrderStatusSchema
   }),
   orderController.updateOrderStatus.bind(orderController)
 );

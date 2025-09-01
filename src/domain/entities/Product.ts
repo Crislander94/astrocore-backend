@@ -101,20 +101,6 @@ export class ProductEntity {
     public readonly updatedAt?: Date
   ) {}
 
-  // Método para convertir a formato frontend
-  toFrontend(): Product {
-    return {
-      id: this.id,
-      name: this.name,
-      descripcion: this.descripcion,
-      price: this.price,
-      images: this.images,
-      haveDiscount: this.haveDiscount,
-      oldPrice: this.oldPrice,
-      category: this.category,
-    };
-  }
-
   // Método para calcular precio con descuento
   getDiscountedPrice(): number {
     if (this.haveDiscount && this.oldPrice) {

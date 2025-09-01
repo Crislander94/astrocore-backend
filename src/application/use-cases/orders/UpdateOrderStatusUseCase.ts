@@ -1,5 +1,5 @@
 import { OrderRepository } from '../../../domain/repositories/OrderRepository';
-import { Order, OrderStatus } from '../../../domain/entities/Order';
+import type { Order, OrderStatus } from '../../../domain/entities/Order';
 
 export class UpdateOrderStatusUseCase {
   constructor(private orderRepository: OrderRepository) {}
@@ -19,13 +19,13 @@ export class UpdateOrderStatusUseCase {
 
   private validateStatusTransition(currentStatus: OrderStatus, newStatus: OrderStatus): void {
     const validTransitions: Record<OrderStatus, OrderStatus[]> = {
-      [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
-      [OrderStatus.CONFIRMED]: [OrderStatus.PROCESSING, OrderStatus.CANCELLED],
-      [OrderStatus.PROCESSING]: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
-      [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED],
-      [OrderStatus.DELIVERED]: [OrderStatus.REFUNDED],
-      [OrderStatus.CANCELLED]: [],
-      [OrderStatus.REFUNDED]: []
+      ['PENDING']: ['CONFIRMED', 'CANCELLED'],
+      ['CONFIRMED']: ['PROCESSING', 'CANCELLED'],
+      ['PROCESSING']: ['SHIPPED', 'CANCELLED'],
+      ['SHIPPED']: ['DELIVERED'],
+      ['DELIVERED']: ['REFUNDED'],
+      ['CANCELLED']: [],
+      ['REFUNDED']: []
     };
 
     const allowedStatuses = validTransitions[currentStatus] || [];

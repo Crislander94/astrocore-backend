@@ -13,11 +13,8 @@ export class UpdateCartItemUseCase {
       throw new Error('Quantity must be greater than 0');
     }
 
-    // Verificar stock disponible
-    const product = await this.productRepository.findById(productId);
-    if (product?.trackQuantity && product.quantity < quantity) {
-      throw new Error('Insufficient stock');
-    }
+    //TODO: Verificar stock disponible
+    // const product = await this.productRepository.findById(productId);
 
     return await this.cartRepository.updateQuantity(userId, productId, quantity);
   }

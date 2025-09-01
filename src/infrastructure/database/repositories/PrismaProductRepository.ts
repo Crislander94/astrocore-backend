@@ -11,10 +11,22 @@ export class PrismaProductRepository implements ProductRepository {
     });
   }
 
+  private convertDecimalFields(product: any): Product {
+    return {
+      ...product,
+      price: product.price ? Number(product.price) : product.price,
+      oldPrice: product.oldPrice ? Number(product.oldPrice) : product.oldPrice,
+      cost: product.cost ? Number(product.cost) : product.cost,
+      weight: product.weight ? Number(product.weight) : product.weight,
+    };
+  }
+
   async findById(id: number): Promise<Product | null> {
-    return await this.prisma.product.findUnique({
+    const product = await this.prisma.product.findUnique({
       where: { id },
     });
+    console.log('Producto encontrado:', product);
+    return product ? this.convertDecimalFields(product) : null;
   }
 
   async findAll(
@@ -58,9 +70,8 @@ export class PrismaProductRepository implements ProductRepository {
       }),
       this.prisma.product.count({ where }),
     ]);
-
     return {
-      products,
+      products: products.map(product => this.convertDecimalFields(product)),
       total,
       page,
       totalPages: Math.ceil(total / limit),

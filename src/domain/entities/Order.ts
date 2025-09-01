@@ -1,67 +1,76 @@
-export interface Order {
-  id: string;
-  orderNumber: string;
-  userId: string;
-  status: OrderStatus;
-  paymentStatus: PaymentStatusOrder;
-  paymentMethod?: string;
-  subtotal: number;
-  tax: number;
-  shipping: number;
-  discount: number;
-  total: number;
-  currency: string;
-  notes?: string;
-  shippingAddressId?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { z } from 'zod';
 
-export interface OrderItem {
-  id: string;
-  orderId: string;
-  productId: number;
-  quantity: number;
-  price: number;
-  total: number;
-}
+export const OrderStatusSchema = z.enum([
+  'PENDING',
+  'CONFIRMED',
+  'PROCESSING',
+  'SHIPPED',
+  'DELIVERED',
+  'CANCELLED',
+  'REFUNDED'
+]);
 
-export interface OrderWithDetails extends Order {
-  items: OrderItemWithProduct[];
-  shippingAddress?: {
-    firstName: string;
-    lastName: string;
-    address1: string;
-    city: string;
-    state: string;
-    postalCode: string;
-    phone?: string;
-  };
-}
+export const PaymentStatusOrderSchema = z.enum([
+  'PENDING',
+  'PROCESSING',
+  'COMPLETED',
+  'FAILED',
+  'CANCELLED',
+  'REFUNDED'
+]);
 
-export interface OrderItemWithProduct extends OrderItem {
-  product: {
-    id: number;
-    name: string;
-    images: string[];
-  };
-}
+export const OrderSchema = z.object({
+  id: z.string(),
+  orderNumber: z.string(),
+  userId: z.string(),
+  status: OrderStatusSchema,
+  paymentStatus: PaymentStatusOrderSchema,
+  paymentMethod: z.string().optional(),
+  subtotal: z.number(),
+  tax: z.number(),
+  shipping: z.number(),
+  discount: z.number(),
+  total: z.number(),
+  currency: z.string(),
+  notes: z.string().optional(),
+  shippingAddressId: z.string().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
 
-export enum OrderStatus {
-  PENDING = 'PENDING',
-  CONFIRMED = 'CONFIRMED',
-  PROCESSING = 'PROCESSING',
-  SHIPPED = 'SHIPPED',
-  DELIVERED = 'DELIVERED',
-  CANCELLED = 'CANCELLED',
-  REFUNDED = 'REFUNDED'
-}
+export const OrderItemSchema = z.object({
+  id: z.string(),
+  orderId: z.string(),
+  productId: z.number(),
+  quantity: z.number(),
+  price: z.number(),
+  total: z.number(),
+});
 
-export enum PaymentStatusOrder {
-  PENDING = 'PENDING',
-  PROCESSING = 'PROCESSING',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
-  CANCELLED = 'CANCELLED',
-  REFUNDED = 'REFUNDED'
-}
+export const OrderItemWithProductSchema = OrderItemSchema.extend({
+  product: z.object({
+    id: z.number(),
+    name: z.string(),
+    images: z.array(z.string()),
+  }),
+});
+
+export const OrderWithDetailsSchema = OrderSchema.extend({
+  items: z.array(OrderItemWithProductSchema),
+  shippingAddress: z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+    address1: z.string(),
+    city: z.string(),
+    state: z.string(),
+    postalCode: z.string(),
+    phone: z.string().optional(),
+  }).optional(),
+});
+
+export type OrderStatus = z.infer<typeof OrderStatusSchema>;
+export type PaymentStatusOrder = z.infer<typeof PaymentStatusOrderSchema>;
+export type Order = z.infer<typeof OrderSchema>;
+export type OrderItem = z.infer<typeof OrderItemSchema>;
+export type OrderItemWithProduct = z.infer<typeof OrderItemWithProductSchema>;
+export type OrderWithDetails = z.infer<typeof OrderWithDetailsSchema>;

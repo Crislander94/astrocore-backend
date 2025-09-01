@@ -40,10 +40,9 @@ export class ProductController {
         page,
         limit,
       });
-
       res.json({
         success: true,
-        data: result,
+        ...result,
       });
     } catch (error) {
       res.status(500).json({

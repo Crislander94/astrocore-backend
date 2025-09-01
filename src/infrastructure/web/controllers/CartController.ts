@@ -53,6 +53,10 @@ export class CartController {
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
+      if (!req.params.productId) {
+        res.status(400).json({ error: 'Product ID is required' });
+        return;
+      }
 
       const productId = parseInt(req.params.productId);
       const { quantity } = req.body;
@@ -70,6 +74,10 @@ export class CartController {
       const userId = req.user?.id;
       if (!userId) {
         res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+      if (!req.params.productId) {
+        res.status(400).json({ error: 'Product ID is required' });
         return;
       }
 
