@@ -25,7 +25,6 @@ export class PrismaProductRepository implements ProductRepository {
     const product = await this.prisma.product.findUnique({
       where: { id },
     });
-    console.log('Producto encontrado:', product);
     return product ? this.convertDecimalFields(product) : null;
   }
 

@@ -61,9 +61,6 @@ export class EmailServiceImpl implements EmailService {
     const subject = this.getSubjectByType(type);
     const html = this.getVerificationEmailTemplate(userName, code, type);
     try {
-      console.log('Sending email to:', email);
-      console.log('Email subject:', subject);
-      console.log('Email HTML:', config.email.fromName + ' <' + config.email.fromEmail + '>');
       await this.transporter.sendMail({
         from: `${config.email.fromName} <${config.email.fromEmail}>`,
         to: email,
