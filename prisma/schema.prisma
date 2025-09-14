@@ -108,7 +108,7 @@ model Product {
   status        ProductStatus @default(DRAFT)
   isActive      Boolean       @default(true)
   isFeatured    Boolean       @default(false)
-  images        String[]      // Array simple como en frontend
+  images        String[]?      // Array simple como en frontend
   tags          String[]
   category      String?       // String simple como en frontend
   metaTitle     String?

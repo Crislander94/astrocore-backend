@@ -33,7 +33,7 @@ export class CreateOrderUseCase {
         throw new Error(`Insufficient stock for ${item.product.name}`);
       }
     }
-
+    console.log(cartItems);
     // Calcular totales
     const subtotal = cartItems.reduce((sum, item) => {
       return sum + (item.product.price * item.quantity);
@@ -46,7 +46,7 @@ export class CreateOrderUseCase {
       return sum;
     }, 0);
 
-    const shipping = 5.00; // Costo fijo de envío
+    const shipping = 0.00; // Costo fijo de envío
     const discount = 0; // Sin descuentos por ahora
     const total = subtotal + tax + shipping - discount;
 

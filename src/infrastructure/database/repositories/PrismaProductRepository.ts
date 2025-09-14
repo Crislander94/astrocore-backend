@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { Product } from '../../../domain/entities/Product';
+import { ProductBackend as Product } from '../../../domain/entities/Product';
 import { ProductRepository, ProductFilters } from '../../../domain/repositories/ProductRepository';
 
 export class PrismaProductRepository implements ProductRepository {
@@ -7,7 +7,12 @@ export class PrismaProductRepository implements ProductRepository {
 
   async create(productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<Product> {
     return await this.prisma.product.create({
-      data: productData,
+      data: {
+        ...productData,
+        slug: productData.name.toLowerCase().replace(/\s+/g, '-'),
+        sku: `SKU-${Date.now()}`,
+        images: productData.images || [],
+      },
     });
   }
 
@@ -84,7 +89,10 @@ export class PrismaProductRepository implements ProductRepository {
     try {
       return await this.prisma.product.update({
         where: { id },
-        data: productData,
+        data: {
+          ...productData,
+          images: productData.images || [],
+        },
       });
     } catch (error) {
       return null;

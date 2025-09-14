@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 export const createProductSchema = z.object({
@@ -6,7 +7,7 @@ export const createProductSchema = z.object({
   descripcion: z.string().optional(),
   shortDesc: z.string().optional(),
   sku: z.string().min(1, 'El SKU es requerido').max(100),
-  price: z.number().positive('El precio debe ser positivo'),
+  price: z.instanceof(Prisma.Decimal),
   oldPrice: z.number().positive().optional(),
   haveDiscount: z.boolean().optional(),
   cost: z.number().positive().optional(),
@@ -17,7 +18,7 @@ export const createProductSchema = z.object({
   status: z.enum(['DRAFT', 'ACTIVE', 'ARCHIVED']).optional(),
   isActive: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
-  images: z.array(z.string().url('URL de imagen inválida')).optional(),
+  images: z.array(z.string()).nullable(),
   tags: z.array(z.string()).optional(),
   category: z.string().optional(),
   metaTitle: z.string().optional(),

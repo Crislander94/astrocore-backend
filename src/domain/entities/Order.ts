@@ -25,15 +25,15 @@ export const OrderSchema = z.object({
   userId: z.string(),
   status: OrderStatusSchema,
   paymentStatus: PaymentStatusOrderSchema,
-  paymentMethod: z.string().optional(),
+  paymentMethod: z.string().nullable(),
   subtotal: z.number(),
   tax: z.number(),
   shipping: z.number(),
   discount: z.number(),
   total: z.number(),
   currency: z.string(),
-  notes: z.string().optional(),
-  shippingAddressId: z.string().optional(),
+  notes: z.string().nullable(),
+  shippingAddressId: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -64,8 +64,8 @@ export const OrderWithDetailsSchema = OrderSchema.extend({
     city: z.string(),
     state: z.string(),
     postalCode: z.string(),
-    phone: z.string().optional(),
-  }).optional(),
+    phone: z.string().nullable(),
+  }).nullable(),
 });
 
 export type OrderStatus = z.infer<typeof OrderStatusSchema>;
