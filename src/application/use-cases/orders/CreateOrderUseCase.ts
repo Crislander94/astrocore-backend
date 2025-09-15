@@ -8,7 +8,7 @@ export class CreateOrderUseCase {
     private cartRepository: CartRepository
   ) {}
 
-  async execute(userId: string, shippingAddressId?: string, notes?: string): Promise<Order> {
+  async execute(userId: string, shippingAddressId: string | null, notes: string | null): Promise<Order> {
     // Obtener items del carrito
     const cartItems = await this.cartRepository.getCartItems(userId);
     
@@ -58,7 +58,12 @@ export class CreateOrderUseCase {
       productId: item.productId,
       quantity: item.quantity,
       price: item.product.price,
-      total: item.product.price * item.quantity
+      total: item.product.price * item.quantity,
+      product: {
+        id: item.product.id,
+        name: item.product.name,
+        images: item.product.images
+      }
     }));
 
     // Crear orden

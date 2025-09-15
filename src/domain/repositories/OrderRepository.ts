@@ -17,6 +17,11 @@ export const CreateOrderDataSchema = z.object({
       quantity: z.number(),
       price: z.number(),
       total: z.number(),
+      product: z.object({
+        id: z.number(),
+        name: z.string(),
+        images: z.array(z.string()).nullable()
+      })
     })
   ),
 });

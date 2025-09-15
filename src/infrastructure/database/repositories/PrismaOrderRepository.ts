@@ -1,12 +1,14 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { OrderRepository, CreateOrderData } from '../../../domain/repositories/OrderRepository';
-import { Order, OrderWithDetails, OrderStatus } from '../../../domain/entities/Order';
+import { Order, OrderWithDetails, OrderStatus, OrderItemWithProduct } from '../../../domain/entities/Order';
 
 export class PrismaOrderRepository implements OrderRepository {
   constructor(private prisma: PrismaClient) {}
 
-  async create(data: CreateOrderData): Promise<Order> {
+  async create(data: CreateOrderData): Promise<OrderWithDetails> {
+    let orderItems: OrderItemWithProduct[] = [];
     const order = await this.prisma.$transaction(async (tx) => {
+      let tmpOrderItems: Prisma.BatchPayload;
       // Crear la orden
       const createdOrder = await tx.order.create({
         data: {
@@ -24,9 +26,8 @@ export class PrismaOrderRepository implements OrderRepository {
           currency: 'USD'
         }
       });
-
       // Crear los items de la orden
-      await tx.orderItem.createMany({
+      tmpOrderItems = await tx.orderItem.createMany({
         data: data.items.map(item => ({
           orderId: createdOrder.id,
           productId: item.productId,
@@ -35,14 +36,31 @@ export class PrismaOrderRepository implements OrderRepository {
           total: item.total
         }))
       });
-
+      console.log(tmpOrderItems);
+      // Actualizar stock de los productos
       return createdOrder;
     });
+    const newOrderItems = data.items.map(item => ({
+      ...item,
+      id: '', // Placeholder, as we don't have the ID from createMany
+      orderId: order.id,
+      total: Number(item.total)
+    }));
 
     return {
       ...order,
+      items: newOrderItems,
       subtotal: Number(order.subtotal),
       tax: Number(order.tax),
+      shippingAddress: data.shippingAddressId ? {
+        firstName: '',
+        lastName: '',
+        address1: '',
+        city: '',
+        state: '',
+        postalCode: '',
+        phone: null
+      } : null,
       shipping: Number(order.shipping),
       discount: Number(order.discount),
       total: Number(order.total),

@@ -51,7 +51,7 @@ export const OrderItemWithProductSchema = OrderItemSchema.extend({
   product: z.object({
     id: z.number(),
     name: z.string(),
-    images: z.array(z.string()),
+    images: z.array(z.string()).nullable(),
   }),
 });
 
