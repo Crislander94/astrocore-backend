@@ -20,8 +20,8 @@ export class OrderController {
         return;
       }
 
-      const { shippingAddressId, notes } = req.body;
-      const order = await this.createOrderUseCase.execute(userId, shippingAddressId, notes);
+      const { addressId, notes } = req.body;
+      const order = await this.createOrderUseCase.execute(userId, addressId, notes);
       res.status(201).json(order);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create order';

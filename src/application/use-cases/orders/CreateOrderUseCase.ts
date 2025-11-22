@@ -33,7 +33,6 @@ export class CreateOrderUseCase {
         throw new Error(`Insufficient stock for ${item.product.name}`);
       }
     }
-    console.log(cartItems);
     // Calcular totales
     const subtotal = cartItems.reduce((sum, item) => {
       return sum + (item.product.price * item.quantity);

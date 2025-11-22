@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { OrderStatus } from '../../../domain/entities/Order';
 
 export const createOrderSchema = z.object({
-  shippingAddressId: z.string().optional(),
+  addressId: z.string().optional(),
   notes: z.string().max(500, 'Notes cannot exceed 500 characters').optional()
 });
 

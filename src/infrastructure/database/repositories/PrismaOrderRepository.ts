@@ -1,15 +1,14 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { OrderRepository, CreateOrderData } from '../../../domain/repositories/OrderRepository';
-import { Order, OrderWithDetails, OrderStatus, OrderItemWithProduct } from '../../../domain/entities/Order';
+import { Order, OrderWithDetails, OrderStatus } from '../../../domain/entities/Order';
 
 export class PrismaOrderRepository implements OrderRepository {
   constructor(private prisma: PrismaClient) {}
 
   async create(data: CreateOrderData): Promise<OrderWithDetails> {
-    let orderItems: OrderItemWithProduct[] = [];
     const order = await this.prisma.$transaction(async (tx) => {
-      let tmpOrderItems: Prisma.BatchPayload;
       // Crear la orden
+      console.log({dataOrder: data});
       const createdOrder = await tx.order.create({
         data: {
           orderNumber: data.orderNumber,
@@ -27,7 +26,7 @@ export class PrismaOrderRepository implements OrderRepository {
         }
       });
       // Crear los items de la orden
-      tmpOrderItems = await tx.orderItem.createMany({
+      await tx.orderItem.createMany({
         data: data.items.map(item => ({
           orderId: createdOrder.id,
           productId: item.productId,
@@ -36,7 +35,6 @@ export class PrismaOrderRepository implements OrderRepository {
           total: item.total
         }))
       });
-      console.log(tmpOrderItems);
       // Actualizar stock de los productos
       return createdOrder;
     });
@@ -47,20 +45,27 @@ export class PrismaOrderRepository implements OrderRepository {
       total: Number(item.total)
     }));
 
+    const shippingAddress = data.shippingAddressId 
+      ? await this.prisma.address.findUnique({
+          where: { id: data.shippingAddressId },
+          select: {
+            firstName: true,
+            lastName: true,
+            address1: true,
+            city: true,
+            state: true,
+            postalCode: true,
+            phone: true
+          }
+        })
+      : null;
+
     return {
       ...order,
       items: newOrderItems,
       subtotal: Number(order.subtotal),
       tax: Number(order.tax),
-      shippingAddress: data.shippingAddressId ? {
-        firstName: '',
-        lastName: '',
-        address1: '',
-        city: '',
-        state: '',
-        postalCode: '',
-        phone: null
-      } : null,
+      shippingAddress,
       shipping: Number(order.shipping),
       discount: Number(order.discount),
       total: Number(order.total),
@@ -99,7 +104,7 @@ export class PrismaOrderRepository implements OrderRepository {
     });
 
     if (!order) return null;
-
+    console.log({orderFound: order});
     return {
       ...order,
       subtotal: Number(order.subtotal),
@@ -157,7 +162,7 @@ export class PrismaOrderRepository implements OrderRepository {
       }),
       this.prisma.order.count({ where: { userId } })
     ]);
-
+    console.log(JSON.stringify({orderFound: orders}, null, 2));
     return {
       orders: orders.map(order => ({
         ...order,
